@@ -10,7 +10,7 @@ const foodCategory = {
     noodles: "麺類",
     vegetables: "野菜",
     marineProducts: "水産物・水産加工品",
-    meetProducts: "肉・肉加工品",
+    meatProducts: "肉・肉加工品",
     dairyProducts: "卵・チーズ・乳製品",
     fruits: "果物"
 
@@ -87,7 +87,7 @@ export const MyTab = () => {
         },
       ],
       //肉・肉加工品
-      meetProducts: [
+      meatProducts: [
         {
           id: 1,
           title: "Ask Me Anything: 10 answers to your questions about coffee",
