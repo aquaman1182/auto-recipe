@@ -110,7 +110,7 @@ export const MyTab = () => {
           ))}
         </Tab.List>
         <div className="flex justify-end ">
-          <button className="btn btn-success">Success</button>
+          <button className="btn btn-success">検索</button>
         </div>
         <Tab.Panels className="mt-2">
           {Object.values(categories).map((images, idx) => (
