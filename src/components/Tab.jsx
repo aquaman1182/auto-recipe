@@ -17,7 +17,7 @@ const getImages = async (dirName) => {
           // asyncを付けると、戻り値はPromiseになる
           // 画像ファイルのリファレンス
           const imageUrl = await getDownloadURL(itemRef); // 画像ファイルのURLを取得
-          const imageName = itemRef.name; // 画像ファイルの名前(拡張子なし)
+          const imageName = itemRef.name.replace(/\.[^/.]+$/, ""); // 画像ファイルの名前(拡張子なし)
           return { url: imageUrl, name: imageName }; // Promise<{ url: imageUrl, name: imageName }>
         })
       );
@@ -38,7 +38,7 @@ const foodCategory = {
   fruits: "果物",
 };
 
-export const MyTab = ({handleClickSearchButton, resipes}) => {
+export const MyTab = ({ handleClickSearchButton }) => {
   const [selected, setSelected] = useState([]); // selectedには選択済みの画像の名前が入る
   const [isLoading, setIsLoading] = useState(true);
   const [categories, setCategories] = useState({
@@ -110,7 +110,12 @@ export const MyTab = ({handleClickSearchButton, resipes}) => {
           ))}
         </Tab.List>
         <div className="flex justify-end ">
-          <button className="btn btn-success" onClick={() => handleClickSearchButton()}>検索</button>
+          <button
+            className="btn btn-success"
+            onClick={() => handleClickSearchButton(selected)}
+          >
+            検索
+          </button>
         </div>
         <Tab.Panels className="mt-2">
           {Object.values(categories).map((images, idx) => (
