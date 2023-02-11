@@ -38,7 +38,7 @@ const foodCategory = {
   fruits: "果物",
 };
 
-export const MyTab = () => {
+export const MyTab = ({handleClickSearchButton, resipes}) => {
   const [selected, setSelected] = useState([]); // selectedには選択済みの画像の名前が入る
   const [isLoading, setIsLoading] = useState(true);
   const [categories, setCategories] = useState({
@@ -110,7 +110,7 @@ export const MyTab = () => {
           ))}
         </Tab.List>
         <div className="flex justify-end ">
-          <button className="btn btn-success">検索</button>
+          <button className="btn btn-success" onClick={() => handleClickSearchButton()}>検索</button>
         </div>
         <Tab.Panels className="mt-2">
           {Object.values(categories).map((images, idx) => (
