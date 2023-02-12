@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 function App(props) {
   return (
-    <div className="w-full px-5 lg:px-32 py-16 sm:px-0">
+    <div className="w-full px-5 2xl:px-32 py-8">
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<MyTab />} />
