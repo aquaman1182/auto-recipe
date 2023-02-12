@@ -1,6 +1,13 @@
-import React, { useState, useMemo, useContext } from "react";
+import React, { useState, useMemo, useContext, useEffect } from "react";
 import { RecipesContext } from "../context";
 import { NotFound } from "./NotFound";
+import { Loading } from "./Loading";
+import { searchSimilarWords } from "../dict";
+import { bigram } from "n-gram";
+import { useLocation } from "react-router-dom";
+import TinySegmenter from "tiny-segmenter";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../firebase";
 
 // {
 //   foodImageUrl: 'https://image.space.rakuten.co.jp/d/strg/ctrl/3/4b97079b047aedb6fee22c664d758e8bbb33a292.47.9.3.3.jpg',
@@ -21,10 +28,114 @@ import { NotFound } from "./NotFound";
 //   smallImageUrl: 'https://image.space.rakuten.co.jp/d/strg/ctrl/3/4b97079b047aedb6fee22c664d758e8bbb33a292.47.9.3.3.jpg?thum=55'
 // }
 
-export const RecipeView = () => {
-  const recipes = useContext(RecipesContext);
+const sliceByNumber = (array, number) => {
+  const length = Math.ceil(array.length / number);
+  return new Array(length)
+    .fill()
+    .map((_, i) => array.slice(i * number, (i + 1) * number));
+};
 
-  if (!recipes) {
+export const RecipeView = () => {
+  // const recipes = useContext(RecipesContext);
+  const [recipes, setRecipes] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const search = useLocation().search;
+  const queryParams = new URLSearchParams(search);
+  const userIngredients = queryParams.get("ingredients").split(",");
+
+  useEffect(() => {
+    const asyncFunc = async () => {
+      console.log("userIngredients: %o", userIngredients);
+
+      // 類似表現を探す
+      const withSimilarExpressionIngredients = userIngredients.flatMap(
+        (ingredient) => [ingredient, ...searchSimilarWords(ingredient)]
+      );
+
+      const segmenter = new TinySegmenter();
+      const parsedUserIngredients = userIngredients.flatMap((userIngredient) =>
+        segmenter.segment(userIngredient)
+      );
+
+      // const parsedUserIngredients = userIngredients.flatMap((userIngredient) =>
+      //   bigram(userIngredient)
+      // );
+
+      console.log("parsedUserIngredients: %o", parsedUserIngredients);
+
+      // array-contains-anyの上限ルールを回避するために、複数回に分けてリクエストを飛ばす
+      const recipesBySubIngredients = await Promise.all(
+        sliceByNumber(parsedUserIngredients, 10).map(
+          async (parsedUserSubIngredients) => {
+            const q = query(
+              collection(db, "recipes"),
+              where(
+                "tinySegmentRecipeMaterial",
+                "array-contains-any",
+                parsedUserSubIngredients
+              )
+            );
+
+            const querySnapshot = await getDocs(q);
+            const recipes = []; // firestoreから取得したレシピ
+            querySnapshot.forEach((doc) => {
+              recipes.push(doc.data());
+            });
+
+            return recipes;
+          }
+        )
+      );
+
+      const recipes = new Map();
+      recipesBySubIngredients.forEach((subRecipes) =>
+        subRecipes.forEach((recipe) => recipes.set(recipe.recipeId, recipe))
+      );
+
+      const result = [];
+      for (const recipe of recipes.values()) {
+        let count = 0; // ユーザーが選択した食材がレシピに含まれている数
+        const hitWords = [];
+        for (const parsedUserIngredient of parsedUserIngredients) {
+          if (
+            recipe.tinySegmentRecipeMaterial.find(
+              (recipeIngredient) => parsedUserIngredient === recipeIngredient
+            )
+          ) {
+            count += 1;
+            hitWords.push(parsedUserIngredient);
+          }
+        }
+        result.push({ count, hitWords, recipe });
+      }
+
+      const sortedResult = result.sort((a, b) => {
+        if (a.count < b.count) {
+          return 1;
+        } else if (a.count > b.count) {
+          return -1;
+        } else {
+          return 0;
+        }
+      });
+
+      setRecipes(sortedResult.map(({ recipe }) => recipe));
+
+      setIsLoading(false);
+    };
+    asyncFunc();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="w-screen h-screen flex items-center justify-center">
+        <Loading />
+      </div>
+    );
+  }
+
+  if (recipes.length === 0) {
     return <NotFound />;
   }
 
