@@ -4,6 +4,10 @@ import React, { useState } from "react";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "./firebase";
 import { bigram } from "n-gram";
+import { RecipeView } from "./components/RecipeView";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { RecipesContext } from "./context";
+import { searchSimilarWords } from "./dict";
 
 const sliceByNumber = (array, number) => {
   const length = Math.ceil(array.length / number);
@@ -11,19 +15,25 @@ const sliceByNumber = (array, number) => {
     .fill()
     .map((_, i) => array.slice(i * number, (i + 1) * number));
 };
+
 function App(props) {
   const [recipes, setRecipes] = useState([]);
 
-  const handleClickSearchButton = async (selected) => {
-    const nGramUserIngredients = selected.flatMap((userIngredient) =>
-      bigram(userIngredient)
+  const handleClickSearchButton = async (userIngredients) => {
+    // 類似表現を探す
+    const withSimilarExpressionIngredients = userIngredients.flatMap(
+      (ingredient) => [ingredient, ...searchSimilarWords(ingredient)]
+    );
+
+    // n-gramを通す
+    const nGramUserIngredients = withSimilarExpressionIngredients.flatMap(
+      (userIngredient) => bigram(userIngredient)
     );
 
     // array-contains-anyの上限ルールを回避するために、複数回に分けてリクエストを飛ばす
     const recipesBySubIngredients = await Promise.all(
       sliceByNumber(nGramUserIngredients, 10).map(
         async (nGramUserSubIngredients) => {
-          console.log("nGramUserSubIngredients: %o", nGramUserSubIngredients);
           const q = query(
             collection(db, "recipes"),
             where(
@@ -79,7 +89,19 @@ function App(props) {
 
   return (
     <div className="App">
-      <MyTab handleClickSearchButton={handleClickSearchButton} />
+      <RecipesContext.Provider value={recipes}>
+        <BrowserRouter>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <MyTab handleClickSearchButton={handleClickSearchButton} />
+              }
+            />
+            <Route path="/RecipeView" element={<RecipeView />} />
+          </Routes>
+        </BrowserRouter>
+      </RecipesContext.Provider>
     </div>
   );
 }

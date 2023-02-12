@@ -5,6 +5,7 @@ import { storage } from "../firebase";
 import React from "react";
 import classNames from "classnames";
 import { Loading } from "./Loading";
+import { useNavigate } from "react-router-dom";
 
 const getImages = async (dirName) => {
   const imagesRef = ref(storage, `images/${dirName}`); // ディレクトリのリファレンス
@@ -39,6 +40,7 @@ const foodCategory = {
 };
 
 export const MyTab = ({ handleClickSearchButton }) => {
+  const navigate = useNavigate();
   const [selected, setSelected] = useState([]); // selectedには選択済みの画像の名前が入る
   const [isLoading, setIsLoading] = useState(true);
   const [categories, setCategories] = useState({
@@ -112,7 +114,11 @@ export const MyTab = ({ handleClickSearchButton }) => {
         <div className="flex justify-end ">
           <button
             className="btn btn-success"
-            onClick={() => handleClickSearchButton(selected)}
+            onClick={() => {
+              handleClickSearchButton(selected).then(() =>
+                navigate("/RecipeView")
+              );
+            }}
           >
             検索
           </button>
