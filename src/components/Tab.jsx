@@ -85,74 +85,72 @@ export const MyTab = () => {
   };
 
   return (
-    <div className="w-full px-5 lg:px-32 py-16 sm:px-0">
-      <Tab.Group
-        onChange={async (index) => {
-          setIsLoading(true);
-          const categoryName = Object.keys(categories)[index];
-          const images = await getImages(categoryName);
-          setCategories((oldCategories) => ({
-            // oldCategories: 更新前のcategories
-            ...oldCategories,
-            [categoryName]: images, // [categoryName] => cereals
-          }));
-          setIsLoading(false);
-        }}
-      >
-        <Tab.List>
-          {Object.keys(categories).map((category) => (
-            <Tab
-              key={category}
-              className={({ selected }) =>
-                classNames("tab tab-bordered", selected ? "tab-active" : "")
-              }
-            >
-              {foodCategory[category]}
-            </Tab>
-          ))}
-        </Tab.List>
-        <div className="flex justify-end ">
-          <button
-            className="btn btn-success"
-            onClick={() => {
-              navigate(`/RecipeView?ingredients=${selected.join(",")}`);
-              // handleClickSearchButton(selected).then(() =>
-              //   navigate("/RecipeView")
-              // );
-            }}
+    <Tab.Group
+      onChange={async (index) => {
+        setIsLoading(true);
+        const categoryName = Object.keys(categories)[index];
+        const images = await getImages(categoryName);
+        setCategories((oldCategories) => ({
+          // oldCategories: 更新前のcategories
+          ...oldCategories,
+          [categoryName]: images, // [categoryName] => cereals
+        }));
+        setIsLoading(false);
+      }}
+    >
+      <Tab.List>
+        {Object.keys(categories).map((category) => (
+          <Tab
+            key={category}
+            className={({ selected }) =>
+              classNames("tab tab-bordered", selected ? "tab-active" : "")
+            }
           >
-            検索
-          </button>
-        </div>
-        <Tab.Panels className="mt-2">
-          {Object.values(categories).map((images, idx) => (
-            <Tab.Panel key={idx}>
-              {isLoading ? (
-                <Loading />
-              ) : (
-                <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {images.map((image) => (
-                    <div key={image.url} className="relative">
-                      <img
-                        alt="gallery"
-                        className="block object-cover object-center w-full h-full rounded-lg"
-                        src={image.url}
-                      />
-                      <div
-                        onClick={() => handleClick(image.name)}
-                        className={classNames(
-                          "rounded-lg absolute top-0 right-0 bottom-0 left-0 w-full h-full overflow-hidden bg-fixed opacity-0 transition duration-300 ease-in-out bg-black",
-                          { "opacity-50": selected.includes(image.name) }
-                        )}
-                      ></div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Tab.Panel>
-          ))}
-        </Tab.Panels>
-      </Tab.Group>
-    </div>
+            {foodCategory[category]}
+          </Tab>
+        ))}
+      </Tab.List>
+      <div className="flex justify-end ">
+        <button
+          className="btn btn-success"
+          onClick={() => {
+            navigate(`/RecipeView?ingredients=${selected.join(",")}`);
+            // handleClickSearchButton(selected).then(() =>
+            //   navigate("/RecipeView")
+            // );
+          }}
+        >
+          検索
+        </button>
+      </div>
+      <Tab.Panels className="mt-2">
+        {Object.values(categories).map((images, idx) => (
+          <Tab.Panel key={idx}>
+            {isLoading ? (
+              <Loading />
+            ) : (
+              <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                {images.map((image) => (
+                  <div key={image.url} className="relative">
+                    <img
+                      alt="gallery"
+                      className="block object-cover object-center w-full h-full rounded-lg"
+                      src={image.url}
+                    />
+                    <div
+                      onClick={() => handleClick(image.name)}
+                      className={classNames(
+                        "rounded-lg absolute top-0 right-0 bottom-0 left-0 w-full h-full overflow-hidden bg-fixed opacity-0 transition duration-300 ease-in-out bg-black",
+                        { "opacity-50": selected.includes(image.name) }
+                      )}
+                    ></div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Tab.Panel>
+        ))}
+      </Tab.Panels>
+    </Tab.Group>
   );
 };
