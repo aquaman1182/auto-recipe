@@ -36,7 +36,6 @@ const sliceByNumber = (array, number) => {
 };
 
 export const RecipeView = () => {
-  // const recipes = useContext(RecipesContext);
   const [recipes, setRecipes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -143,7 +142,9 @@ export const RecipeView = () => {
     <div className="p-10 grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-5">
       {recipes.map((recipe, i) => (
         <div className="rounded overflow-hidden shadow-lg" key={i}>
-          <img className="w-full" src={recipe.foodImageUrl} alt="Mountain" />
+          <a href={recipe.recipeUrl} target="_blank" rel="noopener noreferrer">
+            <img className="w-full" src={recipe.foodImageUrl} alt="Mountain" />
+          </a>
           <div className="px-6 py-4">
             <div className="font-bold text-xl mb-2">{recipe.recipeTitle}</div>
             <p className="text-gray-700 text-base">
