@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "./firebase";
 import { bigram } from "n-gram";
+import TinySegmenter from "tiny-segmenter";
 
 const sliceByNumber = (array, number) => {
   const length = Math.ceil(array.length / number);
@@ -15,21 +16,27 @@ function App(props) {
   const [recipes, setRecipes] = useState([]);
 
   const handleClickSearchButton = async (selected) => {
-    const nGramUserIngredients = selected.flatMap((userIngredient) =>
-      bigram(userIngredient)
+    const segmenter = new TinySegmenter(); // インスタンス生成
+    const parsedUserIngredients = selected.flatMap((userIngredient) =>
+      segmenter.segment(userIngredient)
     );
+
+    // const parsedUserIngredients = selected.flatMap((userIngredient) =>
+    //   bigram(userIngredient)
+    // );
+
+    console.log("parsedUserIngredients: %o", parsedUserIngredients);
 
     // array-contains-anyの上限ルールを回避するために、複数回に分けてリクエストを飛ばす
     const recipesBySubIngredients = await Promise.all(
-      sliceByNumber(nGramUserIngredients, 10).map(
-        async (nGramUserSubIngredients) => {
-          console.log("nGramUserSubIngredients: %o", nGramUserSubIngredients);
+      sliceByNumber(parsedUserIngredients, 10).map(
+        async (parsedUserSubIngredients) => {
           const q = query(
             collection(db, "recipes"),
             where(
-              "nGramRecipeMaterial",
+              "tinySegmentRecipeMaterial",
               "array-contains-any",
-              nGramUserSubIngredients
+              parsedUserSubIngredients
             )
           );
 
@@ -52,16 +59,18 @@ function App(props) {
     const result = [];
     for (const recipe of recipes.values()) {
       let count = 0; // ユーザーが選択した食材がレシピに含まれている数
-      for (const nGramUserIngredient of nGramUserIngredients) {
+      const hitWords = [];
+      for (const parsedUserIngredient of parsedUserIngredients) {
         if (
-          recipe.nGramRecipeMaterial.find(
-            (recipeIngredient) => nGramUserIngredient === recipeIngredient
+          recipe.tinySegmentRecipeMaterial.find(
+            (recipeIngredient) => parsedUserIngredient === recipeIngredient
           )
         ) {
           count += 1;
+          hitWords.push(parsedUserIngredient);
         }
       }
-      result.push({ count, recipe });
+      result.push({ count, hitWords, recipe });
     }
 
     const sortedResult = result.sort((a, b) => {
@@ -73,6 +82,8 @@ function App(props) {
         return 0;
       }
     });
+
+    console.log("sortedResult: %o", sortedResult);
 
     setRecipes(sortedResult.map(({ recipe }) => recipe));
   };

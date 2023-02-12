@@ -11,7 +11,9 @@
   "dependencies": {
     "dotenv": "^16.0.3",
     "firebase-admin": "^11.5.0",
+    "kuromoji": "^0.1.2",
     "n-gram": "^2.0.2",
-    "node-fetch": "^3.3.0"
+    "node-fetch": "^3.3.0",
+    "tiny-segmenter": "^0.2.0"
   }
 }
