@@ -123,30 +123,24 @@ export const MyTab = ({ handleClickSearchButton }) => {
               {isLoading ? (
                 <Loading />
               ) : (
-                <section className="overflow-hidden text-gray-700">
-                  <div className="container py-2 mx-auto lg:pt-12">
-                    <div className="flex flex-wrap -m-1 md:-m-2">
-                      {images.map((image) => (
-                        <div className="flex flex-wrap w-1/3" key={image.url}>
-                          <div className="w-full m-1 md:m-2 relative overflow-hidden bg-no-repeat bg-cover">
-                            <img
-                              alt="gallery"
-                              className="block object-cover object-center w-full h-full rounded-lg"
-                              src={image.url}
-                            />
-                            <div
-                              onClick={() => handleClick(image.name)}
-                              className={classNames(
-                                "absolute top-0 right-0 bottom-0 left-0 w-full h-full overflow-hidden bg-fixed rounded-lg opacity-0 transition duration-300 ease-in-out bg-black",
-                                { "opacity-50": selected.includes(image.name) }
-                              )}
-                            ></div>
-                          </div>
-                        </div>
-                      ))}
+                <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {images.map((image) => (
+                    <div key={image.url} className="relative">
+                      <img
+                        alt="gallery"
+                        className="block object-cover object-center w-full h-full rounded-lg"
+                        src={image.url}
+                      />
+                      <div
+                        onClick={() => handleClick(image.name)}
+                        className={classNames(
+                          "rounded-lg absolute top-0 right-0 bottom-0 left-0 w-full h-full overflow-hidden bg-fixed opacity-0 transition duration-300 ease-in-out bg-black",
+                          { "opacity-50": selected.includes(image.name) }
+                        )}
+                      ></div>
                     </div>
-                  </div>
-                </section>
+                  ))}
+                </div>
               )}
             </Tab.Panel>
           ))}
